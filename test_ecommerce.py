@@ -89,7 +89,21 @@ class TestEcommerceFlow:
 
         # attempt to advance through checkout steps resiliently
         success = checkout_page.complete_checkout(max_attempts=8)
-        assert success, "Order was not completed successfully"
+        if not success:
+            # capture screenshot and page source for debugging
+            import os, time
+            os.makedirs('artifacts', exist_ok=True)
+            ts = time.strftime('%Y%m%d-%H%M%S')
+            try:
+                driver.save_screenshot(f'artifacts/checkout_failure_{ts}.png')
+            except:
+                pass
+            try:
+                with open(f'artifacts/checkout_failure_{ts}.html', 'w', encoding='utf-8') as f:
+                    f.write(driver.page_source)
+            except:
+                pass
+            assert success, "Order was not completed successfully"
         
         assert checkout_page.is_order_successful(), "Order was not completed successfully"
         
